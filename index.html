@@ -230,7 +230,13 @@ if(!name){ms.textContent=t('Атыңызды жазыңыз','Укажите в�
 if(!ans){ms.textContent=t('«Келемін» немесе «Келе алмаймын» таңдаңыз','Выберите «Приду» или «Не смогу»');return}
 if(!RSVP_URL.startsWith('https://')){ms.textContent=t('Форма әлі қосылмаған','Форма ещё не подключена');return}
 sb.disabled=true;ms.textContent=t('Жіберілуде…','Отправка…');
-try{await fetch(RSVP_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams({name,answer:ans,wish})});
-f.style.display='none';document.getElementById('ok').style.display='block'}
-catch(err){sb.disabled=false;ms.textContent=t('Қате шықты, қайталап көріңіз','Ошибка, попробуйте ещё раз')}});})();
+const data={name,answer:ans,wish},done=()=>{f.style.display='none';document.getElementById('ok').style.display='block'};
+// Backup for in-app browsers (WhatsApp, Instagram) that block fetch: a plain form post into a hidden frame
+const viaForm=()=>new Promise(res=>{const n='rf'+Date.now(),fr=document.createElement('iframe');fr.name=n;fr.style.display='none';document.body.appendChild(fr);
+const hf=document.createElement('form');hf.method='POST';hf.action=RSVP_URL;hf.target=n;hf.acceptCharset='UTF-8';hf.style.display='none';
+for(const k in data){const i=document.createElement('input');i.type='hidden';i.name=k;i.value=data[k];hf.appendChild(i)}
+document.body.appendChild(hf);let ok=false;const fin=()=>{if(!ok){ok=true;res()}};fr.addEventListener('load',fin);setTimeout(fin,5000);hf.submit()});
+try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);
+await fetch(RSVP_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams(data),signal:ac.signal});clearTimeout(tm);done()}
+catch(err){try{await viaForm();done()}catch(e2){sb.disabled=false;ms.textContent=t('Қате шықты, қайталап көріңіз','Ошибка, попробуйте ещё раз')}}});})();
 </script></body></html>
