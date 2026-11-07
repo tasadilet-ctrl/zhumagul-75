@@ -238,5 +238,9 @@ for(const k in data){const i=document.createElement('input');i.type='hidden';i.n
 document.body.appendChild(hf);let ok=false;const fin=()=>{if(!ok){ok=true;res()}};fr.addEventListener('load',fin);setTimeout(fin,5000);hf.submit()});
 try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);
 await fetch(RSVP_URL,{method:'POST',mode:'no-cors',body:new URLSearchParams(data),signal:ac.signal});clearTimeout(tm);done()}
-catch(err){try{await viaForm();done()}catch(e2){sb.disabled=false;ms.textContent=t('Қате шықты, қайталап көріңіз','Ошибка, попробуйте ещё раз')}}});})();
+catch(err){let q=false;try{q=navigator.sendBeacon&&navigator.sendBeacon(RSVP_URL,new URLSearchParams(data))}catch(e1){}
+if(q){done();return}
+try{await viaForm();done()}catch(e2){sb.disabled=false;
+// The code after the message tells us which step failed: F = fetch, B = beacon, P = plain form
+const c=' ['+(err&&err.name||'F').slice(0,12)+'/B/P]';ms.textContent=t('Қате шықты, қайталап көріңіз','Ошибка, попробуйте ещё раз')+c}}});})();
 </script></body></html>
